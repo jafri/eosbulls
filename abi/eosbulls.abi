@@ -1,25 +1,109 @@
 {
-   "version": "eosio::abi/1.0",
-   "types": [{
-      "new_type_name": "account_name",
-      "type": "name"
-   }],
+  "version": "eosio::abi/1.0",
+  "types": [{
+     "new_type_name": "account_name",
+     "type": "name"
+  },{
+     "new_type_name": "symbol_type",
+     "type": "string"
+  }],
   "structs": [{
      "name": "ontransfer",
      "base": "",
      "fields": [
-        {"name":"from", "type":"account_name"},
-        {"name":"to", "type":"account_name"},
-        {"name":"quantity", "type":"asset"},
-        {"name":"memo", "type":"string"}
+        {"name":"from",      "type":"account_name"},
+        {"name":"to",        "type":"account_name"},
+        {"name":"quantity",  "type":"asset"},
+        {"name":"memo",      "type":"string"}
      ]
+  }, {
+      "name": "startround",
+      "base": "",
+      "fields": [
+         {"name":"round_number",   "type":"uint64"},
+         {"name":"total_pot",      "type":"asset"},
+         {"name":"inflation_rate", "type":"uint64"},
+         {"name":"last_price",     "type":"uint64"}
+      ]
+  }, {
+      "name": "SymbolIntMap",
+      "base": "",
+      "fields": [
+         {"name":"symbol_type",  "type":"symbol_type"},
+         {"name":"uint64",       "type":"uint64"}
+      ]
+  }, {
+      "name": "SymbolToNameIntMap",
+      "base": "",
+      "fields": [
+         {"name":"symbol_type", "type":"symbol_type"},
+         {"name":"NameIntMap",  "type":"NameIntMap[]"}
+      ]
+  }, {
+      "name": "NameIntMap",
+      "base": "",
+      "fields": [
+         {"name":"account_name",  "type":"account_name"},
+         {"name":"uint64",        "type":"uint64"}
+      ]
+  }, {
+      "name": "round",
+      "base": "",
+      "fields": [
+         {"name":"round_number",           "type":"uint64"},
+         {"name":"total_pot",              "type":"asset"},
+         {"name":"total_referral_payout",  "type":"asset"},
+         {"name":"total_keys_used",        "type":"SymbolIntMap[]"},
+         {"name":"total_keys_bought",      "type":"SymbolIntMap[]"},
+         {"name":"player_keys_used",       "type":"SymbolToNameIntMap[]"},
+         {"name":"last_key_owner",         "type":"account_name"},
+         {"name":"last_key_team",          "type":"symbol_type"},
+         {"name":"last_key_use_time",      "type":"time_point"},
+         {"name":"inflation_rate",         "type":"uint64"},
+         {"name":"last_price",             "type":"uint64"}
+      ]
+  }, {
+     "name": "endround",
+     "base": "",
+     "fields": [{"name":"round_number", "type":"uint64"}]
+  }, {
+     "name": "payout",
+     "base": "",
+     "fields": [{"name":"round_number", "type":"uint64"}]
+  }, {
+     "name": "clearround",
+     "base": "",
+     "fields": [{"name":"round_number", "type":"uint64"}]
   }],
   "actions": [{
       "name": "ontransfer",
       "type": "ontransfer",
       "ricardian_contract": ""
+  }, {
+      "name": "startround",
+      "type": "startround",
+      "ricardian_contract": ""
+  }, {
+      "name": "endround",
+      "type": "endround",
+      "ricardian_contract": ""
+  }, {
+      "name": "payout",
+      "type": "payout",
+      "ricardian_contract": ""
+  }, {
+      "name": "clearround",
+      "type": "clearround",
+      "ricardian_contract": ""
   }],
-  "tables": [],
+  "tables": [{
+      "name": "rounds",
+      "type": "round",
+      "index_type": "i64",
+      "key_names" : ["round"],
+      "key_types" : ["uint64"]
+    }
+  ],
   "ricardian_clauses": [],
   "abi_extensions": []
 }
