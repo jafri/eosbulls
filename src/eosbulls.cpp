@@ -10,58 +10,69 @@ namespace eosio {
         return ct;
     }
 
-    void eosbulls::startround( const uint64_t& round_number,
-                               const asset&    total_pot,      // Carried over from last round
-                               const uint64_t& inflation_rate,
-                               const uint64_t& last_price )    // Price to start at (usually $5)
+    void eosbulls::startround( const asset    total_pot,        // Carried over from last round
+                               const uint64_t inflation_rate,
+                               const uint64_t start_price,      // Price to start at (usually $5)
+                               const uint64_t low_start,        // $1
+                               const uint64_t low_end,          // $0
+                               const uint64_t high_start,       // $9
+                               const uint64_t high_end   )      // $10
     {
+        require_auth(_self);
+
+        // Check data
+        eosio_assert(inflation_rate > 0, "Inflation rate must be positive");
+        eosio_assert(start_price > 0, "Start price must be positive");
+        eosio_assert(low_start > 0, "Low start must be positive");
+        eosio_assert(low_end >= 0, "Low end must be 0 or positive");
+        eosio_assert(high_start > 0, "High start must be positive");
+        eosio_assert(high_end > 0, "High end must be positive");
+
+        // Create new round
         rounds rounds_table(_self, _self);
 
-        rounds_table.emplace(_self, [&]( auto r ) {
-            r.round_number = round_number;
+        rounds_table.emplace(_self, [&]( auto &r ) {
+            r.round_number = rounds_table.available_primary_key();
             r.total_pot = total_pot;
 
-            r.total_referral_payout.amount = 0;
-            r.total_referral_payout.symbol = S(4, EOS);
-
-            r.total_keys_used = flat_map<symbol_type, uint64_t> ();
-            r.total_keys_bought = flat_map<symbol_type, uint64_t> ();
-            r.player_keys_used = flat_map<symbol_type, flat_map<name, uint64_t>> ();
-
-            r.last_key_owner = maria_contract;
-            r.last_key_team = S(0, BULLS);
-            r.last_key_use_time = current_time_point();
-
             r.inflation_rate = inflation_rate;
-            r.last_price = last_price;
+            r.current_price = start_price;
+
+            r.low_start = low_start;
+            r.low_end = low_end;
+            r.high_start = high_start;
+            r.high_end = high_end;
         });
     }
 
-    void eosbulls::ontransfer( const name from,
-                               const name to,
-                               const asset&       quantity,
-                               const std::string& memo )
+    void eosbulls::rmvallrounds()
     {
-        // eosio::print(from, " ", to, " ", quantity, " ", memo);
+        require_auth(_self);
+
+        rounds rounds_table(_self, _self);
+
+        while (rounds_table.begin() != rounds_table.end()) {
+            auto itr = rounds_table.begin();
+            rounds_table.erase(itr);
+        }
     }
 
-    extern "C" {
-        void apply(uint64_t receiver, uint64_t code, uint64_t action) {
-            auto self = receiver;
-
-            // If transfer from system contract eosio.token
-            if (code == eos_token_contract && action == N(transfer)) {
-                eosbulls contract(self);
-                eosio::execute_action(&contract, &eosbulls::ontransfer);
-            }
-
-            // Start round
-            if (code == maria_contract && action == N(startround)) {
-
-                eosbulls contract(self);
-                eosio::execute_action(&contract, &eosbulls::startround);
-            }
-        }
-    } // ABI forwarder
+    void eosbulls::ontransfer( const name         from,
+                               const name         to,
+                               const asset        quantity,
+                               const std::string  memo )
+    {
+        action{
+                permission_level{_self, N(active)},
+                N(eosio.token),
+                N(transfer),
+                transfer {
+                    .from     = _self,
+                    .to       = from,
+                    .quantity = quantity,
+                    .memo     = memo
+                }
+        }.send();
+    }
 
 } // eosio namespace

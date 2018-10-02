@@ -20,11 +20,16 @@
       "name": "startround",
       "base": "",
       "fields": [
-         {"name":"round_number",   "type":"uint64"},
          {"name":"total_pot",      "type":"asset"},
          {"name":"inflation_rate", "type":"uint64"},
-         {"name":"last_price",     "type":"uint64"}
+         {"name":"current_price",     "type":"uint64"},
+         {"name":"spread",         "type":"uint64"},
+         {"name":"gutter",         "type":"uint64"}
       ]
+  }, {
+      "name": "rmvallrounds",
+      "base": "",
+      "fields": []
   }, {
       "name": "SymbolIntMap",
       "base": "",
@@ -60,7 +65,11 @@
          {"name":"last_key_team",          "type":"symbol_type"},
          {"name":"last_key_use_time",      "type":"time_point"},
          {"name":"inflation_rate",         "type":"uint64"},
-         {"name":"last_price",             "type":"uint64"}
+         {"name":"current_price",          "type":"uint64"},
+         {"name":"low_start",              "type":"uint64"},
+         {"name":"low_end",                "type":"uint64"},
+         {"name":"high_start",             "type":"uint64"},
+         {"name":"high_end",               "type":"uint64"}
       ]
   }, {
      "name": "endround",
@@ -84,6 +93,10 @@
       "type": "startround",
       "ricardian_contract": ""
   }, {
+      "name": "rmvallrounds",
+      "type": "rmvallrounds",
+      "ricardian_contract": ""
+  }, {
       "name": "endround",
       "type": "endround",
       "ricardian_contract": ""
@@ -100,7 +113,7 @@
       "name": "rounds",
       "type": "round",
       "index_type": "i64",
-      "key_names" : ["round"],
+      "key_names" : ["round_number"],
       "key_types" : ["uint64"]
     }
   ],
